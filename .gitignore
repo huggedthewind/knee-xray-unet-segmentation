@@ -1,0 +1,18 @@
+# Dataset stays local
+data/
+
+# Python environment and cache
+.venv/
+__pycache__/
+*.py[cod]
+
+# PyCharm
+.idea/
+
+# Trained model files
+*.pt
+*.pth
+
+# Operating-system files
+.DS_Store
+Thumbs.db
