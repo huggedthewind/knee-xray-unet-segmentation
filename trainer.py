@@ -1,0 +1,49 @@
+import torch.optim as optim
+import torch.nn as nn
+import torch
+
+
+def train_model(model, train_loader, validation_loader, device, args):
+
+    training_losses = []
+    validation_losses = []
+    criterion = nn.BCEWithLogitsLoss()
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
+
+    for epoch in range(args.epochs):
+        model.train()
+        running_train_loss = 0
+
+        for xrays, masks in train_loader:
+            xrays = xrays.to(device)
+            masks = masks.to(device)
+            optimizer.zero_grad()
+
+            logits = model(xrays)
+            loss = criterion(logits, masks)
+            loss.backward()
+            optimizer.step()
+            running_train_loss += loss.item()
+
+        avg_training_loss = running_train_loss / len(train_loader)
+        training_losses.append(avg_training_loss)
+
+        model.eval()
+        running_val_loss = 0
+
+        with torch.no_grad():
+            for xrays, masks in validation_loader:
+                xrays = xrays.to(device)
+                masks = masks.to(device)
+                logits = model(xrays)
+                loss = criterion(logits, masks)
+                running_val_loss += loss.item()
+
+        avg_validation_loss = running_val_loss / len(validation_loader)
+        validation_losses.append(avg_validation_loss)
+
+        print(f'Epoch: {epoch + 1} out of {args.epochs}.\n'
+              f'Training loss: {avg_training_loss:.4f}.\n'
+              f'Validation loss: {avg_validation_loss:.4f}')
+
+    return training_losses, validation_losses

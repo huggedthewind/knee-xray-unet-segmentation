@@ -5,6 +5,7 @@ import os
 from torch.utils.data import DataLoader
 from model import UNetLext
 import torch
+from trainer import train_model
 
 args = get_args()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -24,3 +25,5 @@ model = UNetLext(
     input_channels=1,
     output_channels=1
 ).to(device)
+
+training_losses, validation_losses = train_model(model, train_loader, validation_loader, device, args)
