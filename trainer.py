@@ -1,6 +1,7 @@
 import torch.optim as optim
 import torch.nn as nn
 import torch
+from pathlib import Path
 
 
 def train_model(model, train_loader, validation_loader, device, args):
@@ -9,6 +10,9 @@ def train_model(model, train_loader, validation_loader, device, args):
     validation_losses = []
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
+    best_validation_loss = float('inf')
+    output_dir = Path(args.out_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     for epoch in range(args.epochs):
         model.train()
@@ -41,6 +45,9 @@ def train_model(model, train_loader, validation_loader, device, args):
 
         avg_validation_loss = running_val_loss / len(validation_loader)
         validation_losses.append(avg_validation_loss)
+        if avg_validation_loss < best_validation_loss:
+            best_validation_loss = avg_validation_loss
+            torch.save(model.state_dict(), output_dir / 'best_model.pth')
 
         print(f'Epoch: {epoch + 1} out of {args.epochs}.\n'
               f'Training loss: {avg_training_loss:.4f}.\n'
