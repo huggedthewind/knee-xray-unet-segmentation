@@ -2,6 +2,7 @@ import torch.optim as optim
 import torch.nn as nn
 import torch
 from pathlib import Path
+from utils import dice_loss_from_logits
 
 
 def train_model(model, train_loader, validation_loader, device, args):
@@ -24,7 +25,9 @@ def train_model(model, train_loader, validation_loader, device, args):
             optimizer.zero_grad()
 
             logits = model(xrays)
-            loss = criterion(logits, masks)
+            loss_bce = criterion(logits, masks)
+            loss_dice = dice_loss_from_logits(logits, masks)
+            loss = loss_bce + loss_dice
             loss.backward()
             optimizer.step()
             running_train_loss += loss.item()
@@ -40,7 +43,9 @@ def train_model(model, train_loader, validation_loader, device, args):
                 xrays = xrays.to(device)
                 masks = masks.to(device)
                 logits = model(xrays)
-                loss = criterion(logits, masks)
+                loss_bce = criterion(logits, masks)
+                loss_dice = dice_loss_from_logits(logits, masks)
+                loss = loss_bce + loss_dice
                 running_val_loss += loss.item()
 
         avg_validation_loss = running_val_loss / len(validation_loader)
