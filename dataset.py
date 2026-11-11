@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 from PIL import Image
 from torchvision.transforms import functional as TF
+from pathlib import Path
 
 
 class KneeDataset(Dataset):
@@ -23,3 +24,21 @@ class KneeDataset(Dataset):
         mask_tensor = TF.to_tensor(mask_image)
 
         return xray_tensor, mask_tensor
+
+class KneeTestDataset(Dataset):
+    def __init__(self, dataframe):
+        self.dataframe = dataframe
+
+    def __len__(self):
+        return len(self.dataframe)
+
+    def __getitem__(self, index):
+        row = self.dataframe.iloc[index]
+
+        xray_path = row["xrays"]
+        xray_image = Image.open(xray_path).convert("L")
+        filename = Path(xray_path).name
+
+        xray_tensor = TF.to_tensor(xray_image)
+
+        return (xray_tensor, filename)

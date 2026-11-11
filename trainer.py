@@ -54,8 +54,8 @@ def train_model(model, train_loader, validation_loader, device, args):
             best_validation_loss = avg_validation_loss
             torch.save(model.state_dict(), output_dir / 'best_model.pth')
 
-        print(f'Epoch: {epoch + 1} out of {args.epochs}.\n'
-              f'Training loss: {avg_training_loss:.4f}.\n'
+        print(f'Epoch: {epoch + 1} out of {args.epochs}\n'
+              f'Training loss: {avg_training_loss:.4f}\n'
               f'Validation loss: {avg_validation_loss:.4f}')
 
     return training_losses, validation_losses

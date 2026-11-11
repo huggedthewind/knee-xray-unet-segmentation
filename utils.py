@@ -1,4 +1,6 @@
 import torch
+import matplotlib.pyplot as plt
+from pathlib import Path
 
 
 def dice_loss_from_logits(logits, targets, eps: float = 1e-6):
@@ -19,4 +21,20 @@ def dice_score_from_logits(logits, targets, eps: float = 1e-6):
     intersection = (preds * targets).sum(dims)
     union = preds.sum(dims) + targets.sum(dims)
     dice = (2.0 * intersection + eps) / (union + eps)
-    return dice.mean().item()
+    return dice
+
+
+def plot_loss_curves(training_losses, validation_losses, output_dir):
+    epochs = range(1, len(training_losses) + 1)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(epochs, training_losses, label='Training loss')
+    ax.plot(epochs, validation_losses, label='Validation loss')
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss")
+    ax.set_title("Training and Validation Loss")
+    ax.legend()
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    fig.tight_layout()
+    fig.savefig(output_dir / "loss_curves.png", dpi=300, bbox_inches="tight")
+    plt.close(fig)

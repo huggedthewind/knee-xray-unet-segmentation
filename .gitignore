@@ -19,3 +19,6 @@ Thumbs.db
 
 # Submission archives
 *.zip
+
+# Generated training runs
+sessions/
