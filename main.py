@@ -17,7 +17,7 @@ train_set = pd.read_csv(os.path.join(args.csv_dir, 'train.csv'))
 val_set = pd.read_csv(os.path.join(args.csv_dir, 'validation.csv'))
 test_set = pd.read_csv(os.path.join(args.csv_dir, 'test.csv'))
 
-train_dataset = KneeDataset(train_set)
+train_dataset = KneeDataset(train_set, augment=True)
 validation_dataset = KneeDataset(val_set)
 test_dataset = KneeTestDataset(test_set)
 

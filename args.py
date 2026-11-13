@@ -5,7 +5,7 @@ def get_args():
     parser = argparse.ArgumentParser(description='Knee Segmentation project')
     parser.add_argument('-csv_dir', default='data/CSVs')
     parser.add_argument('-out_dir', default='sessions')
-    parser.add_argument('-epochs', default=10, type=int)
+    parser.add_argument('-epochs', default=20, type=int)
     parser.add_argument('-bs', default=16, type=int)
     parser.add_argument('-lr', default=1e-3, choices=[1e-2, 1e-3, 1e-4, 1e-5], type=float)
     parser.add_argument('-wd', default=1e-5, choices=[1e-5, 1e-7], type=float)
