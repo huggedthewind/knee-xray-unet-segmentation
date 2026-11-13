@@ -2,16 +2,17 @@ import torch.optim as optim
 import torch.nn as nn
 import torch
 from pathlib import Path
-from utils import dice_loss_from_logits
+from utils import dice_loss_from_logits, dice_score_from_logits
 
 
 def train_model(model, train_loader, validation_loader, device, args):
 
     training_losses = []
     validation_losses = []
+    validation_dice_scores = []
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
-    best_validation_loss = float('inf')
+    best_validation_dice = float('-inf')
     output_dir = Path(args.out_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -37,25 +38,33 @@ def train_model(model, train_loader, validation_loader, device, args):
 
         model.eval()
         running_val_loss = 0
+        dice_scores_sum = 0
+        val_samples_num = 0
 
         with torch.no_grad():
             for xrays, masks in validation_loader:
                 xrays = xrays.to(device)
                 masks = masks.to(device)
                 logits = model(xrays)
+                batch_dice_scores = dice_score_from_logits(logits, masks)
+                dice_scores_sum += batch_dice_scores.sum().item()
+                val_samples_num += batch_dice_scores.size(0)
                 loss_bce = criterion(logits, masks)
                 loss_dice = dice_loss_from_logits(logits, masks)
                 loss = loss_bce + loss_dice
                 running_val_loss += loss.item()
 
+        avg_validation_dice = dice_scores_sum / val_samples_num
+        validation_dice_scores.append(avg_validation_dice)
         avg_validation_loss = running_val_loss / len(validation_loader)
         validation_losses.append(avg_validation_loss)
-        if avg_validation_loss < best_validation_loss:
-            best_validation_loss = avg_validation_loss
-            torch.save(model.state_dict(), output_dir / 'best_model.pth')
+        if avg_validation_dice > best_validation_dice:
+            best_validation_dice = avg_validation_dice
+            torch.save(model.state_dict(), output_dir / "best_model.pth")
 
         print(f'Epoch: {epoch + 1} out of {args.epochs}\n'
               f'Training loss: {avg_training_loss:.4f}\n'
-              f'Validation loss: {avg_validation_loss:.4f}')
+              f'Validation loss: {avg_validation_loss:.4f}\n'
+              f'Average validation Dice: {avg_validation_dice:.4f}\n')
 
-    return training_losses, validation_losses
+    return training_losses, validation_losses, validation_dice_scores

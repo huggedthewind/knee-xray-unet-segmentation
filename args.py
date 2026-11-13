@@ -9,6 +9,7 @@ def get_args():
     parser.add_argument('-bs', default=16, type=int)
     parser.add_argument('-lr', default=1e-3, choices=[1e-2, 1e-3, 1e-4, 1e-5], type=float)
     parser.add_argument('-wd', default=1e-5, choices=[1e-5, 1e-7], type=float)
+    parser.add_argument('-seed', default=42, type=int)
 
     args = parser.parse_args()
     return args
