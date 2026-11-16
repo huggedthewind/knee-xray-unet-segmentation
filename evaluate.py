@@ -5,6 +5,12 @@ from torchvision.transforms import functional as TF
 import random
 from PIL import Image
 import matplotlib.pyplot as plt
+from args import get_args
+import pandas as pd
+import os
+from dataset import KneeDataset, KneeTestDataset
+from torch.utils.data import DataLoader
+from model import UNetLext
 
 
 def evaluate_model(model, validation_loader, device, best_model_path):
@@ -72,3 +78,19 @@ def save_test_predictions(model, test_loader, device, best_model_path, output_di
         bbox_inches="tight"
     )
     plt.close(fig)
+
+
+if __name__ == "__main__":
+    args = get_args()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    val_set = pd.read_csv(os.path.join(args.csv_dir, 'validation.csv'))
+    test_set = pd.read_csv(os.path.join(args.csv_dir, 'test.csv'))
+    validation_dataset = KneeDataset(val_set)
+    test_dataset = KneeTestDataset(test_set)
+    validation_loader = DataLoader(validation_dataset, batch_size=args.bs, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=args.bs, shuffle=False)
+    model = UNetLext(basic_width=32, depth=4,input_channels=1, output_channels=1).to(device)
+    best_model_path = Path(args.out_dir) / "best_model.pth"
+    validation_dice_score = evaluate_model(model, validation_loader, device, best_model_path)
+    print(f'Validation Dice score: {validation_dice_score:.4f}')
+    save_test_predictions(model, test_loader, device, best_model_path, args.out_dir)
